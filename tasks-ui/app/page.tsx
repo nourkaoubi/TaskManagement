@@ -8,6 +8,9 @@ import TaskDialog from "@/components/TaskDialog";
 import TaskDetailsDialog from "@/components/TaskDetailsDialog";
 import { toast } from "react-toastify";
 import { ModeToggle } from "@/components/ModeToggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+
 interface Task {
   id: number | null;
   title: string;
@@ -44,32 +47,6 @@ export default function Home() {
       setTasks(response.data);
     } catch (error) {
       console.error("Failed to fetch tasks", error);
-    }
-  };
-
-  const handleAddTask = async (task: {
-    title: string;
-    description: string;
-    status: string;
-  }) => {
-    const userData = localStorage.getItem("user");
-    if (!userData) return;
-
-    const { accessToken } = JSON.parse(userData);
-    try {
-      const response = await axiosClient.post(
-        "/tasks",
-        { ...task },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      setTasks([...tasks, response.data]);
-      setIsDialogOpen(false); // Close dialog
-    } catch (error) {
-      console.error("Failed to add task", error);
     }
   };
 
@@ -158,23 +135,56 @@ export default function Home() {
       console.error("Failed to delete task", error);
     }
   };
+  const handleAddTask = async (task: {
+    title: string;
+    description: string;
+    status: string;
+  }) => {
+    const userData = localStorage.getItem("user");
+    if (!userData) return;
+
+    const { accessToken } = JSON.parse(userData);
+    try {
+      const response = await axiosClient.post(
+        "/tasks",
+        { ...task },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setTasks([...tasks, response.data]);
+      setIsDialogOpen(false); // Close dialog
+    } catch (error) {
+      console.error("Failed to add task", error);
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-md px-4 py-2 flex justify-between items-center">
-        <h1 className="text-lg font-bold">Tasks</h1>
+    <main className="min-h-[calc(100vh-60px)] relative pb-16  ">
+      <div className="absolute top-4 right-4">
+        <ModeToggle />
+      </div>
+
+      <nav className=" px-4 py-2 mr-12 flex justify-between items-center">
         {user && (
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Avatar>
+              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
             <p className="text-gray-600">{user.email}</p>
           </div>
         )}
       </nav>
 
-      <section className="container mx-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <section className=" mx-20 py-4 px-8 shadow-sm shadow-gray-400 rounded-xl min-h-[calc(100vh-120px)]">
+        <h1 className="text-lg font-bold mb-2">Tasks</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Pending Tasks */}
           <div
-            className="space-y-4 p-4 bg-yellow-100"
+            className="space-y-4 p-4 dark:border-2 dark:border-red-100 dark:shadow-md dark:shadow-red-600 dark:bg-transparent min-h-[calc(100vh-200px)] bg-red-100 bg-opacity-80 rounded-xl"
             onDrop={() => handleDrop("pending")}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -193,7 +203,7 @@ export default function Home() {
 
           {/* In Progress Tasks */}
           <div
-            className="space-y-4 p-4 bg-blue-100"
+            className="space-y-4 p-4 dark:border-2 dark:border-blue-100 dark:shadow-md dark:shadow-blue-600 dark:bg-transparent min-h-[calc(100vh-200px)] bg-blue-100 bg-opacity-80 rounded-xl"
             onDrop={() => handleDrop("in progress")}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -214,7 +224,7 @@ export default function Home() {
 
           {/* Completed Tasks */}
           <div
-            className="space-y-4 p-4 bg-green-100"
+            className="space-y-4 p-4 dark:border-2 dark:border-green-100 dark:shadow-md dark:shadow-green-600 dark:bg-transparent min-h-[calc(100vh-200px)] bg-green-100 bg-opacity-80 rounded-xl"
             onDrop={() => handleDrop("completed")}
             onDragOver={(e) => e.preventDefault()}
           >
@@ -234,13 +244,13 @@ export default function Home() {
       </section>
 
       {/* Floating Action Button */}
-      <button
+      <Button
         onClick={() => setIsDialogOpen(true)}
-        className="fixed bottom-6 right-6 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600"
+        className="fixed bottom-6 right-6 rounded-full p-6 shadow-lg "
         aria-label="Add Task"
       >
         +
-      </button>
+      </Button>
 
       {/* Dialog Component */}
       <TaskDialog

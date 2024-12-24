@@ -1,99 +1,140 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
-import axiosClient from "@/lib/axiosClient";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation"; // to handle the redirection
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import axiosClient from "@/lib/axiosClient";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ModeToggle } from "@/components/ModeToggle";
 
-interface RegisterForm {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+// Define Zod schema for validation
+const registerSchema = z
+  .object({
+    email: z.string().email("Invalid email address."),
+    password: z.string().min(6, "Password must be at least 6 characters."),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match.",
+  });
 
 export default function Register() {
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Redirect if the user is already logged in
   useEffect(() => {
-    const user = localStorage.getItem("user"); // Adjust based on how you store user data
+    setIsMounted(true);
+    const user = localStorage.getItem("user");
     if (user) {
-      router.push("/"); // Redirect to the homepage if user is already logged in
+      router.push("/");
     }
   }, [router]);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterForm>();
 
-  const onSubmit: SubmitHandler<RegisterForm> = async (data) => {
-    if (data.password !== data.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
+  const onSubmit = async (data: z.infer<typeof registerSchema>) => {
     try {
-      const response = await axiosClient.post("/auth/register", {
+      await axiosClient.post("/auth/register", {
         email: data.email,
         password: data.password,
       });
       toast.success("Registration successful!");
       router.push("/auth/login");
-      console.log(response.data); // Handle redirection
     } catch (error) {
       toast.error("Registration failed. Please try again.");
       console.error(error);
     }
   };
-
+  if (!isMounted) {
+    return (
+      <main className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </main>
+    );
+  }
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 shadow-md rounded-lg">
-        <h1 className="text-xl font-bold mb-4">Register</h1>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full px-4 py-2 border rounded-lg"
-              {...register("email", { required: "Email is required" })}
+    <main className="relative flex flex-col items-center justify-center h-[calc(100vh-60px)]">
+      <div className="absolute top-4 right-4">
+        <ModeToggle />
+      </div>
+      <div className="w-full max-w-md p-8 shadow-2xl rounded-lg">
+        <h1 className="text-xl font-bold text-center mb-4">Sign Up</h1>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full px-4 py-2 border rounded-lg"
-              {...register("password", { required: "Password is required" })}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter your password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              className="w-full px-4 py-2 border rounded-lg"
-              {...register("confirmPassword", {
-                required: "Confirm password is required",
-              })}
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Confirm your password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
-          <Button type="submit">Register</Button>
-        </form>
+            <Button type="submit" className="w-full">
+              Register
+            </Button>
+          </form>
+        </Form>
         <div className="mt-4 text-center">
           <p>
             Already have an account?{" "}

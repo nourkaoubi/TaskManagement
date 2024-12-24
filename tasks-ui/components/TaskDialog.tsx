@@ -1,4 +1,15 @@
+"use client";
+
 import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "./ui/button";
 
 interface TaskDialogProps {
   isOpen: boolean;
@@ -24,18 +35,21 @@ export default function TaskDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAddTask(newTask);
-    console.log("task", newTask);
     setNewTask({ title: "", description: "", status: "pending" }); // Reset form
+    onClose(); // Close the dialog
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h3 className="text-lg font-bold mb-4">Add New Task</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add New Task</DialogTitle>
+          <DialogDescription>
+            Fill out the details below to create a new task.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
             <label htmlFor="title" className="block text-sm font-medium mb-1">
               Title
             </label>
@@ -50,7 +64,7 @@ export default function TaskDialog({
               required
             />
           </div>
-          <div className="mb-4">
+          <div>
             <label
               htmlFor="description"
               className="block text-sm font-medium mb-1"
@@ -67,7 +81,7 @@ export default function TaskDialog({
               required
             />
           </div>
-          <div className="mb-4">
+          <div>
             <label htmlFor="status" className="block text-sm font-medium mb-1">
               Status
             </label>
@@ -86,22 +100,10 @@ export default function TaskDialog({
             </select>
           </div>
           <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Add Task
-            </button>
+            <Button type="submit">Add Task</Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
