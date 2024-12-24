@@ -10,6 +10,7 @@ In this application, each task can have one of three statuses: **Pending**, **In
 - [Frontend Setup](#frontend-setup)
 - [Backend Setup](#backend-setup)
 - [API Endpoints](#api-endpoints)
+- [How to Test with Swagger](#swagger)
 - [Screenshots](#screenshots)
 
 ---
@@ -108,9 +109,35 @@ In this application, each task can have one of three statuses: **Pending**, **In
 - **GET** `/tasks/:id`: Get a specific task by ID for the logged-in user (requires JWT).
 - **PUT** `/tasks/:id`: Update the completion status of a task (requires JWT).
 - **DELETE** `/tasks/:id`: Delete a task (requires JWT).
-- 
+  
 ---
+## How to Test with Swagger
 
+### Accessing Swagger Documentation:
+
+Once the backend server is running, navigate to the following URL in your browser:
+   ```bash
+   http://localhost:<backend-port>/api
+   ```
+Replace <backend-port> with the actual port number specified in your .env file.
+
+### Using Swagger U:
+
+-Swagger will display a user-friendly interface for interacting with the API.
+-You can test all API endpoints (e.g., user authentication, task creation, and task management).
+
+### Authorizing Requests:
+
+-For endpoints requiring JWT, click the Authorize button at the top of the Swagger UI.
+-Enter your JWT token, which you can obtain by logging in via the /auth/login endpoint.
+
+### Testing Endpoints:
+
+-Expand each endpoint to see its details, including the required request body and headers.
+-Fill in the necessary parameters and send requests directly from Swagger.
+
+
+---
 ## Screenshots
 Below are some screenshots of the web application:
 ### Light Mode: 
